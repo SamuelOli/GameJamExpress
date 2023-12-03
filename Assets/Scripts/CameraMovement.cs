@@ -6,7 +6,7 @@ public class CameraMovement : MonoBehaviour
 
     private void Start()
     {
-        player = FindObjectOfType<CharacterMovement>().gameObject;
+        player = FindObjectOfType<PlayerMovement>().gameObject;
     }
 
     private void Update()
