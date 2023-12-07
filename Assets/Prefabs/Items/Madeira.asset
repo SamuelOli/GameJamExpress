@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c2474bfd8863b045875036b1d5919b9, type: 3}
   m_Name: Madeira
   m_EditorClassIdentifier: 
-  itemIcon: {fileID: 0}
-  itemName: 
+  itemIcon: {fileID: 21300000, guid: 616d185a56054914889d5960e68b3509, type: 3}
+  itemName: Wood Pack
   SellPrice: 0
   BuyPrice: 0
-  itemType: 0
+  itemType: 2
   itemRarity: 0
-  Description: 
-  IsStackable: 0
+  Description: Wood
+  IsStackable: 1
   LevelReq: 0
   gearMainType: 0
   Attributes: []
