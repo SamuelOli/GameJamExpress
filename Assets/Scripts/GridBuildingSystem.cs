@@ -1,18 +1,25 @@
 using CodeMonkey.Utils;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GridBuildingSystem : MonoBehaviour
 {
+    public event EventHandler OnSelectedChanged;
+
     [SerializeField] private List<PlacedObjectSO> placedObjectSOList;
     private PlacedObjectSO placedObjectSO;
     private Grid<GridObject> grid;
     private PlacedObjectSO.Dir dir = PlacedObjectSO.Dir.Down;
-    public static GridBuildingSystem Instance;
+    
+    public static GridBuildingSystem Instance { get; private set; }
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else Destroy(gameObject);
+
         int width = 24;
         int height = 16;
         float cellSize = 1f;
@@ -41,7 +48,7 @@ public class GridBuildingSystem : MonoBehaviour
 
             if (canBuild)
             {
-                Vector2Int rotationOffset = placedObjectSO.GetRotarionOffset(dir);
+                Vector2Int rotationOffset = placedObjectSO.GetRotationOffset(dir);
                 Vector3 placedObjectWorldPosition = grid.GetWorldPosition(x, y) + 
                     new Vector3(rotationOffset.x, rotationOffset.y, 0) * grid.GetCellSize();
 
@@ -73,11 +80,48 @@ public class GridBuildingSystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
             dir = PlacedObjectSO.GetNextDir(dir);
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) placedObjectSO = placedObjectSOList[0];
-        if (Input.GetKeyDown(KeyCode.Alpha2)) placedObjectSO = placedObjectSOList[1];
-        if (Input.GetKeyDown(KeyCode.Alpha3)) placedObjectSO = placedObjectSOList[2];
-        if (Input.GetKeyDown(KeyCode.Alpha4)) placedObjectSO = placedObjectSOList[3];
-        if (Input.GetKeyDown(KeyCode.Alpha5)) placedObjectSO = placedObjectSOList[4];
+        if (Input.GetKeyDown(KeyCode.Alpha0)) { DeselectObjectType(); }
+        if (Input.GetKeyDown(KeyCode.Alpha1)) { placedObjectSO = placedObjectSOList[0]; RefreshSelectedObject(); }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) { placedObjectSO = placedObjectSOList[1]; RefreshSelectedObject(); }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) { placedObjectSO = placedObjectSOList[2]; RefreshSelectedObject(); }
+        if (Input.GetKeyDown(KeyCode.Alpha4)) { placedObjectSO = placedObjectSOList[3]; RefreshSelectedObject(); }
+        if (Input.GetKeyDown(KeyCode.Alpha5)) { placedObjectSO = placedObjectSOList[4]; RefreshSelectedObject(); }
+    }
+
+    private void DeselectObjectType()
+    {
+        placedObjectSO = null; RefreshSelectedObject();
+    }
+
+    private void RefreshSelectedObject()
+    {
+        OnSelectedChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Vector3 GetMouseWorldSnappedPosition()
+    {
+        Vector3 mousePosition = UtilsClass.GetMouseWorldPosition();
+        grid.GetXY(mousePosition, out int x, out int y);
+
+        if (placedObjectSO != null)
+        {
+            Vector2Int rotationOffset = placedObjectSO.GetRotationOffset(dir);
+            Vector3 placedObjectWorldPosition = grid.GetWorldPosition(x, y) + new Vector3(rotationOffset.x, rotationOffset.y) * grid.GetCellSize();
+            return placedObjectWorldPosition;
+        }
+        else return mousePosition;
+    }
+
+    public Quaternion GetPlacedObjectRotation()
+    {
+        if (placedObjectSO != null)
+            return Quaternion.Euler(0, 0, placedObjectSO.GetRotationAngle(dir));
+        else return Quaternion.identity;
+    }
+
+    public PlacedObjectSO GetPlacedObjectSO()
+    {
+        return placedObjectSO;
     }
 
     public class GridObject

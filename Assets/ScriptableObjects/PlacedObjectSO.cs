@@ -44,7 +44,7 @@ public class PlacedObjectSO : ScriptableObject
         }
     }
 
-    public Vector2Int GetRotarionOffset(Dir dir)
+    public Vector2Int GetRotationOffset(Dir dir)
     {
         switch (dir)
         {
