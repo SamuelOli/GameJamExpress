@@ -1,22 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class BuildingGhost : MonoBehaviour {
-
+public class BuildingGhost : MonoBehaviour
+{
+    [SerializeField] private Color canBuildColor;
+    [SerializeField] private Color cannotBuildColor;
     private Transform visual;
+    private SpriteRenderer spriteRenderer;
     private PlacedObjectSO placedObjectSO;
 
     private void Start() 
     {
         RefreshVisual();
 
+        spriteRenderer = visual.Find("Sprite").GetComponent<SpriteRenderer>();
+
         GridBuildingSystem.Instance.OnSelectedChanged += Instance_OnSelectedChanged;
+        GridBuildingSystem.Instance.OnCanBuild += ChangeStatusColors;
     }
 
     private void Instance_OnSelectedChanged(object sender, System.EventArgs e) 
     {
         RefreshVisual();
+    }
+
+    private void ChangeStatusColors(object sender, GridBuildingSystem.OnCanBuildEventArgs e)
+    {
+        if (e.canBuild)
+            spriteRenderer.color = canBuildColor;
+        else spriteRenderer.color = cannotBuildColor;
     }
 
     private void LateUpdate() 
@@ -35,7 +46,7 @@ public class BuildingGhost : MonoBehaviour {
             visual = null;
         }
 
-        PlacedObjectSO placedObjectSO = GridBuildingSystem.Instance.GetPlacedObjectSO();
+        placedObjectSO = GridBuildingSystem.Instance.GetPlacedObjectSO();
 
         if (placedObjectSO != null) 
         {
@@ -45,5 +56,4 @@ public class BuildingGhost : MonoBehaviour {
             visual.localEulerAngles = Vector3.zero;
         }
     }
-
 }

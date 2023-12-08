@@ -6,12 +6,19 @@ using UnityEngine;
 public class GridBuildingSystem : MonoBehaviour
 {
     public event EventHandler OnSelectedChanged;
+    public event EventHandler<OnCanBuildEventArgs> OnCanBuild;
+    public class OnCanBuildEventArgs : EventArgs
+    {
+        public bool canBuild;
+    }
 
     [SerializeField] private List<PlacedObjectSO> placedObjectSOList;
     private PlacedObjectSO placedObjectSO;
     private Grid<GridObject> grid;
     private PlacedObjectSO.Dir dir = PlacedObjectSO.Dir.Down;
-    
+    private Vector2Int previousMousePosition = Vector2Int.zero;
+    private bool canBuild = true;
+
     public static GridBuildingSystem Instance { get; private set; }
 
     private void Awake()
@@ -30,13 +37,16 @@ public class GridBuildingSystem : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        Vector3 mousePosition = UtilsClass.GetMouseWorldPosition();
+        grid.GetXY(mousePosition, out int x, out int y);
+
+        List<Vector2Int> gridPositionList = placedObjectSO.GetGridPositionList(new Vector2Int(x, y), dir);
+
+        if (previousMousePosition != new Vector2Int(x, y))
         {
-            grid.GetXY(UtilsClass.GetMouseWorldPosition(), out int x, out int y);
+            previousMousePosition = new Vector2Int(x, y);
 
-            List<Vector2Int> gridPositionList =  placedObjectSO.GetGridPositionList(new Vector2Int(x, y), dir);
-
-            bool canBuild = true;
+            canBuild = true;
             foreach (Vector2Int gridPosition in gridPositionList)
             {
                 if (!grid.GetGridObject(gridPosition.x, gridPosition.y).CanBuild())
@@ -45,7 +55,10 @@ public class GridBuildingSystem : MonoBehaviour
                     break;
                 }
             }
+        }
 
+        if (Input.GetMouseButtonDown(0))
+        {
             if (canBuild)
             {
                 Vector2Int rotationOffset = placedObjectSO.GetRotationOffset(dir);
@@ -57,9 +70,11 @@ public class GridBuildingSystem : MonoBehaviour
                 foreach (Vector2Int gridPosition in gridPositionList)
                     grid.GetGridObject(gridPosition.x, gridPosition.y).SetPlacedObject(placedObject);
             }
-            else
-                UtilsClass.CreateWorldTextPopup("Cannot build here!", UtilsClass.GetMouseWorldPosition());
+            //else
+                //UtilsClass.CreateWorldTextPopup("Cannot build here!", UtilsClass.GetMouseWorldPosition());
         }
+
+            OnCanBuild(this, new OnCanBuildEventArgs { canBuild = canBuild });
 
         if (Input.GetMouseButtonDown(1))
         {
@@ -70,7 +85,7 @@ public class GridBuildingSystem : MonoBehaviour
             {
                 placedObject.DestroySelf();
 
-                List<Vector2Int> gridPositionList = placedObject.GetGridPositionList();
+                /*List<Vector2Int> */gridPositionList = placedObject.GetGridPositionList();
 
                 foreach (Vector2Int gridPosition in gridPositionList)
                     grid.GetGridObject(gridPosition.x, gridPosition.y).ClearPlacedObject();
