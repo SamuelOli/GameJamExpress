@@ -8,15 +8,14 @@ public class Player : MonoBehaviour
     private float Speed;
     private Animator anim;
     [SerializeField]
-    private float raio;
-    [SerializeField]
-    private LayerMask enemys;
-    [SerializeField]
+    AudioClip _atack_audio;
     float timer;
+    private AudioManager AM;
 
     void Start()
     {
         anim = GetComponent<Animator>();
+        AM = FindObjectOfType<AudioManager>();
     }
 
     // Update is called once per frame
@@ -46,5 +45,6 @@ public class Player : MonoBehaviour
     void Atack()
     {
         anim.SetTrigger("AT");
+        AM.Tocar_Audio(_atack_audio);
     }
 }
